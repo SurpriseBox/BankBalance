@@ -1,4 +1,5 @@
 import typing as t
+from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
@@ -10,6 +11,7 @@ class User(BaseModel):
     first_name: str = Field(min_length=1, max_length=200)
     last_name: str = Field(max_length=200)
     patr_name: str = Field(max_length=200)
+    balance: Decimal = Field(max_digits=14, decimal_places=4)
 
     class Config:
         orm_mode = True
@@ -22,8 +24,7 @@ class UserCreate(BaseModel):
 
 
 class BalanceOut(BaseModel):
-    user_id: int
-    balance: float
+    balance: Decimal = Field(max_digits=14, decimal_places=4)
     currency: str = 'RUR'
 
 

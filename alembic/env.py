@@ -16,7 +16,10 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 import db.models as models
+
 target_metadata = models.Base.metadata
+
+
 # target_metadata = None
 
 # other values from the config, defined by the needs of env.py,
@@ -43,6 +46,7 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        compare_type=True, compare_server_default=True
     )
 
     with context.begin_transaction():
@@ -64,7 +68,8 @@ def run_migrations_online():
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata,
+            compare_type=True, compare_server_default=True
         )
 
         with context.begin_transaction():

@@ -1,23 +1,42 @@
-from sqlalchemy.engine import Engine, create_engine
-from sqlalchemy.orm.session import sessionmaker, Session
+import typing as t
+from contextlib import asynccontextmanager
+
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
+from sqlalchemy.orm.session import sessionmaker
 
 
 class Database:
-    _session_class = None
+    _session_class: t.Type[AsyncSession] = None
+    _engine: AsyncEngine = None
 
     @classmethod
     def create_connection(cls, db_url: str):
-        e = create_engine(db_url)
-        cls.create_session_class(e)
+        """
+        Creates DB engine and stores it in this class.
+
+        :param db_url:
+        :return:
+        """
+        cls._engine = create_async_engine(db_url)
+        cls._session_class = sessionmaker(cls._engine, class_=AsyncSession, expire_on_commit=False)
 
     @classmethod
-    def create_session_class(cls, engine: Engine):
-        cls._session_class = sessionmaker(engine)
+    async def get_session(cls) -> AsyncSession:
+        """
+        Yields DB session.
+
+        :return:
+        """
+        async with cls._session_class() as session:
+            yield session
 
     @classmethod
-    def get_session(cls) -> Session:
-        s = cls._session_class()
-        try:
-            yield s
-        finally:
-            s.close()
+    @asynccontextmanager
+    async def get_session_manager(cls) -> AsyncSession:
+        """
+        Yields DB session that can be used in async context manager.
+
+        :return:
+        """
+        async with cls._session_class() as session:
+            yield session

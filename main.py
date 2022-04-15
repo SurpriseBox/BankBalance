@@ -1,17 +1,11 @@
-import typing as t
 
 from fastapi import FastAPI
 
-from apps import router as final_router
+from apps import get_apps_router
 from config import Config
 from db.database import Database
 
-
-def config(conf: t.Type[Config]):
-    Database.create_connection(conf.DB)
-
-
-config(Config)
+Database.create_connection(Config.DB_URL)
 
 app = FastAPI()
-app.include_router(final_router)
+app.include_router(get_apps_router())
